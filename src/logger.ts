@@ -20,8 +20,13 @@ export const logger = pino({
   hooks: {
     logMethod(args, method) {
       const scope = loggerScopeStorage.getStore();
-      if (typeof args[0] === 'string' && scope) {
-        args[0] = `[${scope.path}] [Id=${scope.requestId}] ${args[0]}`;
+      if (scope) {
+        if (typeof args[0] === 'string') {
+          args = [`[%s] [Id=%s] ${args[0]}`, scope.path, scope.requestId, ...args.slice(1)];
+        }
+        if (typeof args[0] === 'object' && typeof args[1] === 'string') {
+          args = [args[0], `[%s] [Id=%s] ${args[1]}`, scope.path, scope.requestId, ...args.slice(2)];
+        }
       }
       method.apply(this, args);
     },
